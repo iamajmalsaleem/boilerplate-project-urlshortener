@@ -36,22 +36,41 @@ let urlSchema = new Schema({
 
 let urlModel = mongoose.model('URL', urlSchema)
 
-let urlObj = {}
+let urlObj = {};
+
 
 app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, response) => {
   let input = req.body.url
   urlObj['original_url'] = input
 
 let shortUrl = 1
+let count = 1;
 
-urlModel.findOne({})
+urlModel.findOne({original:input})
+.select("original")
+.select("short")
+.select("-_id")
+.exec((err,res)=>{
+  if(!err && res!=undefined){
+    
+    response.json({original_url:res.original,short_url:res.short})
+   count=2;
+    console.log("1st" + count)
+  }
+})
+
+console.log("2nd" + count)
+if(count==2) {return }
+else 
+
+{  urlModel.findOne({})
 .sort({short:"desc"})
 .exec((err,res)=>{
   if(!err && res!=undefined){
      shortUrl=res.short+1
   }
   if(!err){
-   urlModel.create({ original: input,short:shortUrl }, (err, res)=>{
+   urlModel.create({ original: input,short:shortUrl}, (err, res)=>{
   if (!err) {
     urlObj['short_url'] = res.short;
     response.json(urlObj)
@@ -59,7 +78,7 @@ urlModel.findOne({})
   
 });
   }
-})
+})   }
 
 })
  
