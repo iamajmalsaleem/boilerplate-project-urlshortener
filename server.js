@@ -43,41 +43,41 @@ let urlObj = {};
 app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, response) => {
   let input = req.body.url
 
-  let urlStr = new RegExp("((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)");
+  let urlStr = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
 
-  if(!input.match(urlStr)){
-  response.json({error: 'Invalid URL'})
-	return
-}
-  
+  if (!input.match(urlStr)) {
+    response.json({ error: 'Invalid URL' })
+    return
+  }
+
 
 
   urlObj['original_url'] = input
 
   let shortUrl = 1
 
- /*
- let count = 1;
-  urlModel.findOne({ original: input })
-    .select("original")
-    .select("short")
-    .select("-_id")
-    .exec((err, res) => {
-      if (!err && res != undefined) {
+  /*
+  let count = 1;
+   urlModel.findOne({ original: input })
+     .select("original")
+     .select("short")
+     .select("-_id")
+     .exec((err, res) => {
+       if (!err && res != undefined) {
+ 
+         return (response.json({ original_url: res.original, short_url: res.short }))
+ 
+        // count = 2;
+        // console.log("1st" + count)
+       }
+     })
+ 
+   //console.log("2nd" + count)
+   //if (count == 2) { return }
+  // else {
+ */
 
-        return (response.json({ original_url: res.original, short_url: res.short }))
-
-       // count = 2;
-       // console.log("1st" + count)
-      }
-    })
-
-  //console.log("2nd" + count)
-  //if (count == 2) { return }
- // else {
-*/
-   
-    urlModel.findOne({})
+  urlModel.findOne({})
     .sort({ short: "desc" })
     .exec((err, res) => {
       if (!err && res != undefined) {
@@ -93,7 +93,7 @@ app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, resp
         });
       }
     })
- // }
+  // }
 
 })
 
