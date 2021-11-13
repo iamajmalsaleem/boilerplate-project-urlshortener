@@ -55,8 +55,9 @@ app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, resp
   urlObj['original_url'] = input
 
   let shortUrl = 1
-  let count = 1;
 
+ /*
+ let count = 1;
   urlModel.findOne({ original: input })
     .select("original")
     .select("short")
@@ -66,14 +67,16 @@ app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, resp
 
         return (response.json({ original_url: res.original, short_url: res.short }))
 
-        count = 2;
-        console.log("1st" + count)
+       // count = 2;
+       // console.log("1st" + count)
       }
     })
 
-  console.log("2nd" + count)
-  if (count == 2) { return }
-  else {
+  //console.log("2nd" + count)
+  //if (count == 2) { return }
+ // else {
+*/
+   
     urlModel.findOne({})
     .sort({ short: "desc" })
     .exec((err, res) => {
@@ -90,7 +93,7 @@ app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, resp
         });
       }
     })
-  }
+ // }
 
 })
 
