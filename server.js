@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 var mongoose = require("mongoose");
 let bodyParser = require('body-parser')
+const dns = require('dns');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -41,44 +42,65 @@ let urlObj = {};
 
 app.post('/api/shorturl', bodyParser.urlencoded({ extended: false }), (req, response) => {
   let input = req.body.url
+
+  let urlStr = new RegExp("((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)");
+
+  if(!input.match(urlStr)){
+  response.json({error: 'Invalid URL'})
+	return
+}
+  
+
+
   urlObj['original_url'] = input
 
-let shortUrl = 1
-let count = 1;
+  let shortUrl = 1
+  let count = 1;
 
-urlModel.findOne({original:input})
-.select("original")
-.select("short")
-.select("-_id")
-.exec((err,res)=>{
-  if(!err && res!=undefined){
-    
-    response.json({original_url:res.original,short_url:res.short})
-   count=2;
-    console.log("1st" + count)
+  urlModel.findOne({ original: input })
+    .select("original")
+    .select("short")
+    .select("-_id")
+    .exec((err, res) => {
+      if (!err && res != undefined) {
+
+        return (response.json({ original_url: res.original, short_url: res.short }))
+
+        count = 2;
+        console.log("1st" + count)
+      }
+    })
+
+  console.log("2nd" + count)
+  if (count == 2) { return }
+  else {
+    urlModel.findOne({})
+    .sort({ short: "desc" })
+    .exec((err, res) => {
+      if (!err && res != undefined) {
+        shortUrl = res.short + 1
+      }
+      if (!err) {
+        urlModel.create({ original: input, short: shortUrl }, (err, res) => {
+          if (!err) {
+            urlObj['short_url'] = res.short;
+            response.json(urlObj)
+          }
+
+        });
+      }
+    })
   }
+
 })
 
-console.log("2nd" + count)
-if(count==2) {return }
-else 
-
-{  urlModel.findOne({})
-.sort({short:"desc"})
-.exec((err,res)=>{
-  if(!err && res!=undefined){
-     shortUrl=res.short+1
-  }
-  if(!err){
-   urlModel.create({ original: input,short:shortUrl}, (err, res)=>{
-  if (!err) {
-    urlObj['short_url'] = res.short;
-    response.json(urlObj)
-  }
-  
-});
-  }
-})   }
-
+app.get("/api/shorturl/:short", (req, resp) => {
+  shortUrl = req.params.short
+  urlModel.findOne({ short: shortUrl }, (err, res) => {
+    if (!err && res != undefined) {
+      resp.redirect(res.original)
+    } else {
+      resp.json({ error: 'URL Does Not Exist' })
+    }
+  })
 })
- 
